@@ -2,7 +2,7 @@ import asyncHandler from '../utils/asyncHandler.js'
 import { ApiError } from '../utils/ApiError.js';
 import { User } from "../models/user.model.js";
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
-
+import { ApiResponse } from '../utils/ApiResponse.js';
 
 const registerUser = asyncHandler(async (req, res) => {
     //res.status(200).json({ message: "User registered successfully" });
@@ -73,7 +73,15 @@ const registerUser = asyncHandler(async (req, res) => {
         username: username.toLowerCase(),
     })
 
-    const createUser = await User.findById(user._id).then((user) => {})
+    const createdUser = await User.findById(user._id).select(
+        "-password -refreshToken"
+    )
+
+    if(!createdUser){
+        throw new ApiError(500,"User registration failed")
+    }
+
+    return res.status(201).json(new ApiResponse(201,"User registered successfully",createdUser))
 
 })
 
